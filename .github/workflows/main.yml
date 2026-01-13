@@ -46,7 +46,7 @@ jobs:
             open-in-view: false
 
         server:
-          port: 8080
+          port: 9003
           servlet:
             context-path: /
             encoding:
@@ -77,10 +77,10 @@ jobs:
         ./gradlew clean build -x test
 
     - name: Build Docker image
-      run: docker build -t bjt-gallery:latest .
+      run: docker build -t bjt-gallery-backend:latest .
 
     - name: Save Docker image
-      run: docker save bjt-gallery:latest | gzip > bjt-gallery.tar.gz
+      run: docker save bjt-gallery-backend:latest | gzip > bjt-gallery-backend.tar.gz
 
     - name: Copy files to server
       uses: appleboy/scp-action@master
@@ -89,7 +89,7 @@ jobs:
         username: ${{ secrets.SERVER_USER }}
         key: ${{ secrets.SERVER_SSH_KEY }}
         port: ${{ secrets.SERVER_SSH_PORT }}
-        source: "bjt-gallery.tar.gz"
+        source: "bjt-gallery-backend.tar.gz"
         target: "/home/winterholic/projects/services/bjt-gallery"
 
     - name: Deploy to server
@@ -103,21 +103,21 @@ jobs:
           cd /home/winterholic/projects/services/bjt-gallery
 
           # Load Docker image
-          docker load < bjt-gallery.tar.gz
+          docker load < bjt-gallery-backend.tar.gz
 
           # Stop and remove old container
-          docker stop bjt-gallery || true
-          docker rm bjt-gallery || true
+          docker stop bjt-gallery-backend || true
+          docker rm bjt-gallery-backend || true
 
           # Run new container
           docker run -d \
-            --name bjt-gallery \
+            --name bjt-gallery-backend \
             --restart unless-stopped \
-            -p 8080:8080 \
-            bjt-gallery:latest
+            -p 9003:9003 \
+            bjt-gallery-backend:latest
 
           # Clean up
-          rm bjt-gallery.tar.gz
+          rm bjt-gallery-backend.tar.gz
           docker system prune -af --volumes
 
           echo "Deployment completed!"

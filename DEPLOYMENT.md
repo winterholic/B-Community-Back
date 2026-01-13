@@ -41,26 +41,26 @@
 ## 배포 확인
 
 배포 완료 후 다음 URL로 접속하여 확인:
-- API: `http://{SERVER_HOST}:8080/api/v1/posts`
-- Swagger: `http://{SERVER_HOST}:8080/swagger-ui/index.html`
-- Health Check: `http://{SERVER_HOST}:8080/api/v1/health`
+- API: `http://{SERVER_HOST}:9003/api/v1/posts`
+- Swagger: `http://{SERVER_HOST}:9003/swagger-ui/index.html`
+- Health Check: `http://{SERVER_HOST}:9003/api/v1/health`
 
 ## 로그 확인
 
 서버에 SSH 접속 후:
 ```bash
 # 컨테이너 로그 확인
-docker logs -f bjt-gallery
+docker logs -f bjt-gallery-backend
 
 # 컨테이너 상태 확인
-docker ps | grep bjt-gallery
+docker ps | grep bjt-gallery-backend
 ```
 
 ## 수동 재시작
 
 ```bash
 cd /home/winterholic/projects/services/bjt-gallery
-docker restart bjt-gallery
+docker restart bjt-gallery-backend
 ```
 
 ## 문제 해결
@@ -68,19 +68,19 @@ docker restart bjt-gallery
 컨테이너가 실행되지 않는 경우:
 ```bash
 # 로그 확인
-docker logs bjt-gallery
+docker logs bjt-gallery-backend
 
 # 컨테이너 중지 및 삭제
-docker stop bjt-gallery
-docker rm bjt-gallery
+docker stop bjt-gallery-backend
+docker rm bjt-gallery-backend
 
 # 이미지 확인
-docker images | grep bjt-gallery
+docker images | grep bjt-gallery-backend
 
 # 수동 실행
 docker run -d \
-  --name bjt-gallery \
+  --name bjt-gallery-backend \
   --restart unless-stopped \
-  -p 8080:8080 \
-  bjt-gallery:latest
+  -p 9003:9003 \
+  bjt-gallery-backend:latest
 ```

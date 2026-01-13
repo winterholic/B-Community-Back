@@ -30,7 +30,7 @@ spring:
     open-in-view: false
 
 server:
-  port: 8080
+  port: 9003
   servlet:
     context-path: /
     encoding:
