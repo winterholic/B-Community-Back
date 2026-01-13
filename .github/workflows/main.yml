@@ -18,8 +18,8 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
 
-    - name: Grant execute permission for gradlew
-      run: chmod +x gradlew
+    - name: Setup Gradle
+      uses: gradle/gradle-build-action@v2
 
     - name: Create application-prod.yml
       run: |
@@ -72,7 +72,9 @@ jobs:
         EOF
 
     - name: Build with Gradle
-      run: ./gradlew clean build -x test
+      run: |
+        chmod +x gradlew || true
+        ./gradlew clean build -x test
 
     - name: Build Docker image
       run: docker build -t bjt-gallery:latest .
