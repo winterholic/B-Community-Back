@@ -1,0 +1,11 @@
+.gradle
+build
+!build/libs/*.jar
+gradle
+gradlew
+gradlew.bat
+*.md
+.git
+.gitignore
+src/main/resources/application.yml
+src/main/resources/application-dev.yml

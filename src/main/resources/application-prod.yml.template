@@ -1,0 +1,55 @@
+# 운영 환경 설정 템플릿
+# GitHub Secrets에 설정할 값들:
+# - DB_URL: jdbc:mariadb://192.168.0.3:3306/bjt_gallery?useUnicode=true&characterEncoding=utf8
+# - DB_USERNAME: 데이터베이스 사용자명
+# - DB_PASSWORD: 데이터베이스 비밀번호
+# - IP_HASH_SALT: IP 해시 솔트 값
+# - SERVER_HOST: 배포 서버 IP/도메인
+# - SERVER_USER: winterholic
+# - SERVER_SSH_KEY: SSH private key
+# - SERVER_SSH_PORT: SSH 포트 번호
+
+spring:
+  application:
+    name: bjt-gallery
+
+  datasource:
+    driver-class-name: org.mariadb.jdbc.Driver
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+        dialect: org.hibernate.dialect.MariaDBDialect
+    open-in-view: false
+
+server:
+  port: 8080
+  servlet:
+    context-path: /
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
+
+mybatis:
+  mapper-locations: mapper/*.xml
+  type-aliases-package: com.bjt.gallery
+  configuration:
+    map-underscore-to-camel-case: true
+
+logging:
+  level:
+    com.bjt.gallery: INFO
+    org.hibernate.SQL: WARN
+    org.hibernate.type.descriptor.sql.BasicBinder: WARN
+
+app:
+  security:
+    ip-hash-salt: ${IP_HASH_SALT}

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.bjt.gallery.repository.CommentMapper">
+
+    <!-- 특정 게시글의 모든 댓글 조회 (평면 구조) -->
+    <select id="findCommentsByPostId" resultType="com.bjt.gallery.dto.response.CommentResponse">
+        SELECT
+            c.id AS id,
+            c.parent_id AS parentId,
+            c.author_hash AS authorHash,
+            c.created_at AS createdAt,
+            c.content AS content,
+            c.upvote_count AS upvoteCount,
+            c.downvote_count AS downvoteCount,
+            c.depth AS depth
+        FROM comments c
+        WHERE c.post_id = #{postId}
+          AND c.is_deleted = false
+        ORDER BY
+            CASE WHEN c.parent_id IS NULL THEN c.id ELSE c.parent_id END,
+            c.depth,
+            c.created_at
+    </select>
+
+    <!-- 특정 게시글의 인기 댓글 Top 3 조회 -->
+    <select id="findHotCommentsByPostId" resultType="com.bjt.gallery.dto.response.CommentResponse">
+        SELECT
+            c.id AS id,
+            c.parent_id AS parentId,
+            c.author_hash AS authorHash,
+            c.created_at AS createdAt,
+            c.content AS content,
+            c.upvote_count AS upvoteCount,
+            c.downvote_count AS downvoteCount,
+            c.depth AS depth
+        FROM comments c
+        WHERE c.post_id = #{postId}
+          AND c.is_deleted = false
+        ORDER BY (c.upvote_count - c.downvote_count) DESC, c.created_at DESC
+        LIMIT 3
+    </select>
+
+</mapper>

@@ -1,0 +1,121 @@
+name: BJT Gallery CI/CD
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up JDK 17
+      uses: actions/setup-java@v3
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+
+    - name: Grant execute permission for gradlew
+      run: chmod +x gradlew
+
+    - name: Create application-prod.yml
+      run: |
+        mkdir -p src/main/resources
+        cat > src/main/resources/application-prod.yml << 'EOF'
+        spring:
+          application:
+            name: bjt-gallery
+
+          datasource:
+            driver-class-name: org.mariadb.jdbc.Driver
+            url: ${{ secrets.DB_URL }}
+            username: ${{ secrets.DB_USERNAME }}
+            password: ${{ secrets.DB_PASSWORD }}
+
+          jpa:
+            hibernate:
+              ddl-auto: update
+            show-sql: false
+            properties:
+              hibernate:
+                format_sql: false
+                dialect: org.hibernate.dialect.MariaDBDialect
+            open-in-view: false
+
+        server:
+          port: 8080
+          servlet:
+            context-path: /
+            encoding:
+              charset: UTF-8
+              enabled: true
+              force: true
+
+        mybatis:
+          mapper-locations: mapper/*.xml
+          type-aliases-package: com.bjt.gallery
+          configuration:
+            map-underscore-to-camel-case: true
+
+        logging:
+          level:
+            com.bjt.gallery: INFO
+            org.hibernate.SQL: WARN
+            org.hibernate.type.descriptor.sql.BasicBinder: WARN
+
+        app:
+          security:
+            ip-hash-salt: ${{ secrets.IP_HASH_SALT }}
+        EOF
+
+    - name: Build with Gradle
+      run: ./gradlew clean build -x test
+
+    - name: Build Docker image
+      run: docker build -t bjt-gallery:latest .
+
+    - name: Save Docker image
+      run: docker save bjt-gallery:latest | gzip > bjt-gallery.tar.gz
+
+    - name: Copy files to server
+      uses: appleboy/scp-action@master
+      with:
+        host: ${{ secrets.SERVER_HOST }}
+        username: ${{ secrets.SERVER_USER }}
+        key: ${{ secrets.SERVER_SSH_KEY }}
+        port: ${{ secrets.SERVER_SSH_PORT }}
+        source: "bjt-gallery.tar.gz"
+        target: "/home/winterholic/projects/services/bjt-gallery"
+
+    - name: Deploy to server
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.SERVER_HOST }}
+        username: ${{ secrets.SERVER_USER }}
+        key: ${{ secrets.SERVER_SSH_KEY }}
+        port: ${{ secrets.SERVER_SSH_PORT }}
+        script: |
+          cd /home/winterholic/projects/services/bjt-gallery
+
+          # Load Docker image
+          docker load < bjt-gallery.tar.gz
+
+          # Stop and remove old container
+          docker stop bjt-gallery || true
+          docker rm bjt-gallery || true
+
+          # Run new container
+          docker run -d \
+            --name bjt-gallery \
+            --restart unless-stopped \
+            -p 8080:8080 \
+            bjt-gallery:latest
+
+          # Clean up
+          rm bjt-gallery.tar.gz
+          docker system prune -af --volumes
+
+          echo "Deployment completed!"
