@@ -13,7 +13,7 @@
             SUBSTRING(p.author_hash, 1, 7) AS authorHash,
             (p.upvote_count - p.downvote_count) AS voteScore,
             COALESCE(comment_counts.cnt, 0) AS commentCount,
-            DATE(p.created_at) AS createdAt,
+            p.created_at AS createdAt,
             SUBSTRING(REGEXP_REPLACE(p.content, '&lt;[^&gt;]*&gt;', ''), 1, 100) AS contentPreview
         FROM posts p
         LEFT JOIN (
@@ -43,7 +43,7 @@
             SUBSTRING(p.author_hash, 1, 7) AS authorHash,
             (p.upvote_count - p.downvote_count) AS voteScore,
             COALESCE(comment_counts.cnt, 0) AS commentCount,
-            DATE(p.created_at) AS createdAt,
+            p.created_at AS createdAt,
             SUBSTRING(REGEXP_REPLACE(p.content, '&lt;[^&gt;]*&gt;', ''), 1, 100) AS contentPreview
         FROM posts p
         LEFT JOIN (

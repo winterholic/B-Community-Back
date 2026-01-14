@@ -6,7 +6,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Getter
 @NoArgsConstructor
@@ -20,6 +20,6 @@ public class PostListResponse {
     private String authorHash; // 7자 short hash
     private Long voteScore; // upvoteCount - downvoteCount
     private Long commentCount;
-    private LocalDate createdAt; // 날짜만
+    private LocalDateTime createdAt;
     private String contentPreview; // HTML 태그 제거된 텍스트
 }
